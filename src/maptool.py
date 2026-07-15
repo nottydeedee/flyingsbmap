@@ -15,6 +15,8 @@ from signatures import signature_report
 
 from compare_maps import compare_maps
 
+from common_signatures import common_signatures
+
 ROOT = Path(__file__).resolve().parent.parent
 PCX_DIR = ROOT / "Extracted" / "PCX"
 MAP_DIR = ROOT / "Extracted" / "MAP"
@@ -299,6 +301,9 @@ def main():
             return
 
         compare_maps(file1, file2)
+
+    elif cmd == "common-signatures":
+        common_signatures(MAP_DIR)
 
     else:
         print(f"Unknown command: {cmd}")
