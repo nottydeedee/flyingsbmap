@@ -17,6 +17,8 @@ from compare_maps import compare_maps
 
 from common_signatures import common_signatures
 
+from decode_records import decode_record
+
 ROOT = Path(__file__).resolve().parent.parent
 PCX_DIR = ROOT / "Extracted" / "PCX"
 MAP_DIR = ROOT / "Extracted" / "MAP"
@@ -304,6 +306,17 @@ def main():
 
     elif cmd == "common-signatures":
         common_signatures(MAP_DIR)
+
+    elif cmd == "decode-record":
+        if len(sys.argv) != 4:
+            print("Usage:")
+            print("python src\\maptool.py decode-record MAP_NAME RECORD_INDEX")
+            return
+
+        decode_record(
+            sys.argv[2],
+            int(sys.argv[3]),
+        )
 
     else:
         print(f"Unknown command: {cmd}")
