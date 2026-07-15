@@ -3,6 +3,8 @@ import struct
 
 
 class MapFile:
+    RECORD_SIZE = 48
+
     def __init__(self, filename):
         self.filename = Path(filename)
         self.data = self.filename.read_bytes()
@@ -13,17 +15,20 @@ class MapFile:
 
     @property
     def record_count(self):
-        # Each map record is 48 bytes
-        return self.size // 48
+        return len(self.data) // self.RECORD_SIZE
 
-    def first_records(self, count=5):
-        records = []
+    def record(self, index):
+        offset = index * self.RECORD_SIZE
 
-        for i in range(min(count, self.record_count)):
-            offset = i * 48
+        values = struct.unpack_from("<12I", self.data, offset)
 
-            values = struct.unpack_from("<12I", self.data, offset)
+        return values
 
-            records.append(values)
+    def dump_record(self, index):
+        r = self.record(index)
 
-        return records
+        print(f"Record {index}")
+        print("-" * 20)
+
+        for i, value in enumerate(r):
+            print(f"{i:2}: {value} (0x{value:08X})")

@@ -56,11 +56,9 @@ def info_map(name):
 
     print("First 5 records:")
 
-    for i, record in enumerate(m.first_records()):
-        print(f"\nRecord {i}")
-
-        for j, value in enumerate(record):
-            print(f"  {j:2}: {value}")
+    for i in range(5):
+        m.dump_record(i)
+        print()
 
 
 def export_pcx(name):
