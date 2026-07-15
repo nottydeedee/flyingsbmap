@@ -19,6 +19,12 @@ from common_signatures import common_signatures
 
 from decode_records import decode_record
 
+from analyze_fields import analyze_fields
+
+from edit_field import edit_field
+
+from inspect_file import inspect_file
+
 ROOT = Path(__file__).resolve().parent.parent
 PCX_DIR = ROOT / "Extracted" / "PCX"
 MAP_DIR = ROOT / "Extracted" / "MAP"
@@ -242,16 +248,34 @@ def main():
             print()
 
     elif cmd == "render-map":
-        if len(sys.argv) != 3:
+        if len(sys.argv) not in (3, 4):
             print("Usage:")
             print("python src\\maptool.py render-map MAPNAME")
+            print("python src\\maptool.py render-map PATH_TO_BIN ORIGINAL_MAPNAME")
             return
 
-        map_name = sys.argv[2]
+        arg = Path(sys.argv[2])
 
-        map_file = MAP_DIR / f"{map_name}.bin"
-        pcx_file = PCX_DIR / f"{map_name}.bin"
-        output_file = ROOT / "output" / "maps" / f"{map_name}.png"
+        if arg.exists():
+            # User supplied a .bin file
+            map_file = arg
+            map_name = arg.stem
+
+            if len(sys.argv) == 4:
+                pcx_name = sys.argv[3]
+            else:
+                pcx_name = map_name
+
+            pcx_file = PCX_DIR / f"{pcx_name}.bin"
+            output_file = ROOT / "output" / "maps" / f"{map_name}_edited.png"
+
+        else:
+            # User supplied a map name
+            map_name = sys.argv[2]
+
+            map_file = MAP_DIR / f"{map_name}.bin"
+            pcx_file = PCX_DIR / f"{map_name}.bin"
+            output_file = ROOT / "output" / "maps" / f"{map_name}.png"
 
         if not map_file.exists():
             print(f"MAP file not found: {map_file}")
@@ -262,7 +286,6 @@ def main():
             return
 
         render_map(map_file, pcx_file, output_file)
-
     elif cmd == "pointer":
         if len(sys.argv) != 3:
             print("Usage:")
@@ -314,6 +337,41 @@ def main():
             return
 
         decode_record(
+            sys.argv[2],
+            int(sys.argv[3]),
+        )
+
+    elif cmd == "analyze-fields":
+        analyze_fields(
+            MAP_DIR,
+            (
+                int(sys.argv[2]),
+                int(sys.argv[3]),
+                int(sys.argv[4]),
+                int(sys.argv[5]),
+            ),
+        )
+
+    elif cmd == "edit-field":
+        if len(sys.argv) != 6:
+            print("Usage:")
+            print("python src\\maptool.py edit-field FILE RECORD FIELD VALUE")
+            return
+
+        edit_field(
+            sys.argv[2],
+            int(sys.argv[3]),
+            int(sys.argv[4]),
+            int(sys.argv[5]),
+        )
+
+    elif cmd == "inspect-file":
+        if len(sys.argv) != 4:
+            print("Usage:")
+            print("python src\\maptool.py inspect-file FILE RECORD")
+            return
+
+        inspect_file(
             sys.argv[2],
             int(sys.argv[3]),
         )
