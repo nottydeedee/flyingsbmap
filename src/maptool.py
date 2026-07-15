@@ -13,6 +13,8 @@ from analysis import classify_map, find_records
 
 from signatures import signature_report
 
+from compare_maps import compare_maps
+
 ROOT = Path(__file__).resolve().parent.parent
 PCX_DIR = ROOT / "Extracted" / "PCX"
 MAP_DIR = ROOT / "Extracted" / "MAP"
@@ -278,6 +280,25 @@ def main():
             return
 
         signature_report(filename)
+
+    elif cmd == "compare-maps":
+        if len(sys.argv) != 4:
+            print("Usage:")
+            print("python src\\maptool.py compare-maps MAP1 MAP2")
+            return
+
+        file1 = MAP_DIR / f"{sys.argv[2]}.bin"
+        file2 = MAP_DIR / f"{sys.argv[3]}.bin"
+
+        if not file1.exists():
+            print(f"File not found: {file1}")
+            return
+
+        if not file2.exists():
+            print(f"File not found: {file2}")
+            return
+
+        compare_maps(file1, file2)
 
     else:
         print(f"Unknown command: {cmd}")
