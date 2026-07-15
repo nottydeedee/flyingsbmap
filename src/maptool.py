@@ -68,7 +68,8 @@ def inspect_map(name):
         return
 
     m = MapFile(filename)
-    r = m.record(0)
+    header = m.record(0)
+    r = header["fields"]
 
     print(name)
     print("=" * len(name))
@@ -86,6 +87,53 @@ def inspect_map(name):
     print(f"Field 9 : {r[9]}")
     print()
     print(f"Records : {m.record_count}")
+
+
+def inspect_record(name, index):
+    filename = ROOT / "Extracted" / "MAP" / f"{name}.bin"
+
+    if not filename.exists():
+        print(f"File not found: {filename}")
+        return
+
+    m = MapFile(filename)
+
+    try:
+        record = m.record(index)
+    except IndexError as e:
+        print(e)
+        return
+
+    print(f"{name} - Record {index}")
+    print("=" * 30)
+    print(f"Offset : 0x{record['offset']:08X}")
+    print()
+
+    for i, value in enumerate(record["fields"]):
+        print(f"{i:2}: {value:10} (0x{value:08X})")
+
+
+def classify_map(name):
+    filename = ROOT / "Extracted" / "MAP" / f"{name}.bin"
+
+    if not filename.exists():
+        print(f"File not found: {filename}")
+        return
+
+    m = MapFile(filename)
+
+    counts = {}
+
+    for i in range(m.record_count):
+        r = m.record(i)["fields"]
+        key = tuple(r[:4])
+        counts[key] = counts.get(key, 0) + 1
+
+    print("Record type counts:")
+    print()
+
+    for key, count in sorted(counts.items()):
+        print(f"{key} -> {count}")
 
 
 def export_pcx(name):
@@ -110,6 +158,8 @@ def main():
         print("  python src\\maptool.py info-pcx <name>")
         print("  python src\\maptool.py export-pcx <name>")
         print("  python src\\maptool.py inspect-map <name>")
+        print("  python src\\maptool.py inspect-record <map> <record>")
+        print("  python src\\maptool.py classify-map <name>")
         return
 
     cmd = sys.argv[1].lower()
@@ -145,6 +195,20 @@ def main():
             return
 
         inspect_map(sys.argv[2])
+
+    elif cmd == "inspect-record":
+        if len(sys.argv) != 4:
+            print("Usage: python src\\maptool.py inspect-record TAA0_00P 1")
+            return
+
+        inspect_record(sys.argv[2], int(sys.argv[3]))
+
+    elif cmd == "classify-map":
+        if len(sys.argv) != 3:
+            print("Usage: python src\\maptool.py classify-map TAA0_00P")
+            return
+
+        classify_map(sys.argv[2])
 
     else:
         print(f"Unknown command: {cmd}")

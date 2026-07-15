@@ -18,11 +18,18 @@ class MapFile:
         return len(self.data) // self.RECORD_SIZE
 
     def record(self, index):
+        if index < 0 or index >= self.record_count:
+            raise IndexError("Record index out of range")
+
         offset = index * self.RECORD_SIZE
 
         values = struct.unpack_from("<12I", self.data, offset)
 
-        return values
+        return {
+            "index": index,
+            "offset": offset,
+            "fields": values,
+        }
 
     def dump_all(self):
         for index in range(self.record_count):
