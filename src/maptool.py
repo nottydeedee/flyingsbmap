@@ -5,6 +5,8 @@ from pcx import read_header, export_png
 
 from map import MapFile
 
+from render import render_map
+
 from analysis import classify_map, find_records
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -228,6 +230,28 @@ def main():
                 print(f"{i:2}: {value:10} (0x{value:08X})")
 
             print()
+
+    elif cmd == "render-map":
+        if len(sys.argv) != 3:
+            print("Usage:")
+            print("python src\\maptool.py render-map MAPNAME")
+            return
+
+        map_name = sys.argv[2]
+
+        map_file = MAP_DIR / f"{map_name}.bin"
+        pcx_file = PCX_DIR / f"{map_name}.bin"
+        output_file = ROOT / "output" / "maps" / f"{map_name}.png"
+
+        if not map_file.exists():
+            print(f"MAP file not found: {map_file}")
+            return
+
+        if not pcx_file.exists():
+            print(f"PCX file not found: {pcx_file}")
+            return
+
+        render_map(map_file, pcx_file, output_file)
 
     else:
         print(f"Unknown command: {cmd}")
