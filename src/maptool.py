@@ -7,7 +7,11 @@ from map import MapFile
 
 from render import render_map
 
+from pointers import inspect_pointer
+
 from analysis import classify_map, find_records
+
+from signatures import signature_report
 
 ROOT = Path(__file__).resolve().parent.parent
 PCX_DIR = ROOT / "Extracted" / "PCX"
@@ -252,6 +256,28 @@ def main():
             return
 
         render_map(map_file, pcx_file, output_file)
+
+    elif cmd == "pointer":
+        if len(sys.argv) != 3:
+            print("Usage:")
+            print("python src\\maptool.py pointer VALUE")
+            return
+
+        inspect_pointer(int(sys.argv[2]))
+
+    elif cmd == "signatures":
+        if len(sys.argv) != 3:
+            print("Usage:")
+            print("python src\\maptool.py signatures MAPNAME")
+            return
+
+        filename = MAP_DIR / f"{sys.argv[2]}.bin"
+
+        if not filename.exists():
+            print(f"File not found: {filename}")
+            return
+
+        signature_report(filename)
 
     else:
         print(f"Unknown command: {cmd}")
