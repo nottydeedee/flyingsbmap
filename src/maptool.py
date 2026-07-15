@@ -54,11 +54,38 @@ def info_map(name):
     print(f"Records      : {m.record_count}")
     print()
 
-    print("First 5 records:")
+    print("All records:")
+    print()
 
-    for i in range(5):
-        m.dump_record(i)
-        print()
+    m.dump_all()
+
+
+def inspect_map(name):
+    filename = ROOT / "Extracted" / "MAP" / f"{name}.bin"
+
+    if not filename.exists():
+        print(f"File not found: {filename}")
+        return
+
+    m = MapFile(filename)
+    r = m.record(0)
+
+    print(name)
+    print("=" * len(name))
+    print("Header")
+    print("------")
+    print(f"Field 0 : {r[0]}")
+    print(f"Field 1 : {r[1]}")
+    print(f"Field 2 : {r[2]}")
+    print(f"Field 3 : {r[3]}")
+    print(f"Field 4 : {r[4]}")
+    print(f"Field 5 : {r[5]}")
+    print(f"Field 6 : {r[6]}")
+    print(f"Field 7 : {r[7]}")
+    print(f"Field 8 : {r[8]}")
+    print(f"Field 9 : {r[9]}")
+    print()
+    print(f"Records : {m.record_count}")
 
 
 def export_pcx(name):
@@ -82,6 +109,7 @@ def main():
         print("  python src\\maptool.py list-pcx")
         print("  python src\\maptool.py info-pcx <name>")
         print("  python src\\maptool.py export-pcx <name>")
+        print("  python src\\maptool.py inspect-map <name>")
         return
 
     cmd = sys.argv[1].lower()
@@ -110,6 +138,13 @@ def main():
             return
 
         info_map(sys.argv[2])
+
+    elif cmd == "inspect-map":
+        if len(sys.argv) != 3:
+            print("Usage: python src\\maptool.py inspect-map TAA0_00P")
+            return
+
+        inspect_map(sys.argv[2])
 
     else:
         print(f"Unknown command: {cmd}")

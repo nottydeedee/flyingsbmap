@@ -24,11 +24,14 @@ class MapFile:
 
         return values
 
-    def dump_record(self, index):
-        r = self.record(index)
+    def dump_all(self):
+        for index in range(self.record_count):
+            print(f"Record {index}")
+            print("-" * 20)
 
-        print(f"Record {index}")
-        print("-" * 20)
+            r = self.record(index)
 
-        for i, value in enumerate(r):
-            print(f"{i:2}: {value} (0x{value:08X})")
+            for i, value in enumerate(r):
+                print(f"{i:2}: {value} (0x{value:08X})")
+
+            print()
