@@ -5,8 +5,11 @@ from pcx import read_header, export_png
 
 from map import MapFile
 
+from analysis import classify_map, find_records
+
 ROOT = Path(__file__).resolve().parent.parent
 PCX_DIR = ROOT / "Extracted" / "PCX"
+MAP_DIR = ROOT / "Extracted" / "MAP"
 OUTPUT_DIR = ROOT / "output" / "png"
 
 
@@ -113,29 +116,6 @@ def inspect_record(name, index):
         print(f"{i:2}: {value:10} (0x{value:08X})")
 
 
-def classify_map(name):
-    filename = ROOT / "Extracted" / "MAP" / f"{name}.bin"
-
-    if not filename.exists():
-        print(f"File not found: {filename}")
-        return
-
-    m = MapFile(filename)
-
-    counts = {}
-
-    for i in range(m.record_count):
-        r = m.record(i)["fields"]
-        key = tuple(r[:4])
-        counts[key] = counts.get(key, 0) + 1
-
-    print("Record type counts:")
-    print()
-
-    for key, count in sorted(counts.items()):
-        print(f"{key} -> {count}")
-
-
 def export_pcx(name):
     source = PCX_DIR / f"{name}.bin"
 
@@ -204,11 +184,50 @@ def main():
         inspect_record(sys.argv[2], int(sys.argv[3]))
 
     elif cmd == "classify-map":
-        if len(sys.argv) != 3:
-            print("Usage: python src\\maptool.py classify-map TAA0_00P")
+        filename = MAP_DIR / f"{sys.argv[2]}.bin"
+
+        if not filename.exists():
+            print(f"File not found: {filename}")
             return
 
-        classify_map(sys.argv[2])
+        counts = classify_map(filename)
+
+        print("Record type counts:\n")
+
+        for sig, count in sorted(counts.items()):
+            print(f"{sig} -> {count}")
+
+    elif cmd == "find-records":
+        if len(sys.argv) != 7:
+            print("Usage:")
+            print("python src\\maptool.py find-records MAPNAME a b c d")
+            return
+
+        filename = MAP_DIR / f"{sys.argv[2]}.bin"
+
+        if not filename.exists():
+            print(f"File not found: {filename}")
+            return
+
+        signature = (
+            int(sys.argv[3]),
+            int(sys.argv[4]),
+            int(sys.argv[5]),
+            int(sys.argv[6]),
+        )
+
+        matches = find_records(filename, signature)
+
+        print(f"Matching records in {sys.argv[2]}\n")
+
+        for record in matches:
+            print(f"Record {record.index}")
+            print("-" * 20)
+
+            for i, value in enumerate(record.fields):
+                print(f"{i:2}: {value:10} (0x{value:08X})")
+
+            print()
 
     else:
         print(f"Unknown command: {cmd}")

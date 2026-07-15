@@ -2,6 +2,44 @@ from pathlib import Path
 import struct
 
 
+class MapRecord:
+    def __init__(self, index, offset, fields):
+        self.index = index
+        self.offset = offset
+        self.fields = tuple(fields)
+
+    @property
+    def signature(self):
+        return self.fields[:4]
+
+    @property
+    def type(self):
+        return self.fields[0]
+
+    @property
+    def subtype(self):
+        return self.fields[1]
+
+    @property
+    def width(self):
+        return self.fields[8]
+
+    @property
+    def height(self):
+        return self.fields[9]
+
+    @property
+    def ref1(self):
+        return self.fields[10]
+
+    @property
+    def ref2(self):
+        return self.fields[11]
+
+    def __getitem__(self, index):
+        return self.fields[index]
+
+
 class MapFile:
     RECORD_SIZE = 48
 
@@ -23,22 +61,10 @@ class MapFile:
 
         offset = index * self.RECORD_SIZE
 
-        values = struct.unpack_from("<12I", self.data, offset)
+        fields = struct.unpack_from("<12I", self.data, offset)
 
-        return {
-            "index": index,
-            "offset": offset,
-            "fields": values,
-        }
+        return MapRecord(index, offset, fields)
 
-    def dump_all(self):
-        for index in range(self.record_count):
-            print(f"Record {index}")
-            print("-" * 20)
-
-            r = self.record(index)
-
-            for i, value in enumerate(r):
-                print(f"{i:2}: {value} (0x{value:08X})")
-
-            print()
+    def records(self):
+        for i in range(self.record_count):
+            yield self.record(i)
