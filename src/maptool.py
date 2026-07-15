@@ -3,6 +3,8 @@ import sys
 
 from pcx import read_header, export_png
 
+from map import MapFile
+
 ROOT = Path(__file__).resolve().parent.parent
 PCX_DIR = ROOT / "Extracted" / "PCX"
 OUTPUT_DIR = ROOT / "output" / "png"
@@ -35,6 +37,30 @@ def info_pcx(name):
     print(f"Bits/Pixel    : {header.bits_per_pixel}")
     print(f"Planes        : {header.planes}")
     print(f"Bytes/Line    : {header.bytes_per_line}")
+
+
+def info_map(name):
+    filename = ROOT / "Extracted" / "MAP" / f"{name}.bin"
+
+    if not filename.exists():
+        print(f"File not found: {filename}")
+        return
+
+    m = MapFile(filename)
+
+    print(name)
+    print("-" * len(name))
+    print(f"File size    : {m.size} bytes")
+    print(f"Records      : {m.record_count}")
+    print()
+
+    print("First 5 records:")
+
+    for i, record in enumerate(m.first_records()):
+        print(f"\nRecord {i}")
+
+        for j, value in enumerate(record):
+            print(f"  {j:2}: {value}")
 
 
 def export_pcx(name):
@@ -78,6 +104,14 @@ def main():
             return
 
         export_pcx(sys.argv[2])
+
+    elif cmd == "info-map":
+        if len(sys.argv) != 3:
+            print("Usage: python src\\maptool.py info-map TAA0_00P")
+            print("  python src\\maptool.py info-map <name>")
+            return
+
+        info_map(sys.argv[2])
 
     else:
         print(f"Unknown command: {cmd}")
