@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 import struct
 
+from PIL import Image
+
 
 @dataclass
 class PCXHeader:
@@ -46,3 +48,18 @@ def read_header(filename):
         planes=data[65],
         bytes_per_line=struct.unpack_from("<H", data, 66)[0],
     )
+
+
+def export_png(source_file, output_file):
+    """
+    Export a PCX resource to PNG.
+    """
+    source_file = Path(source_file)
+    output_file = Path(output_file)
+
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    with Image.open(source_file) as img:
+        img.save(output_file, "PNG")
+
+    return output_file

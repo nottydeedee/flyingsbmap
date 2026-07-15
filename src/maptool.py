@@ -1,13 +1,28 @@
-from pcx import read_header
 from pathlib import Path
 import sys
 
+from pcx import read_header, export_png
+
 ROOT = Path(__file__).resolve().parent.parent
 PCX_DIR = ROOT / "Extracted" / "PCX"
+OUTPUT_DIR = ROOT / "output" / "png"
+
+
+def list_pcx():
+    files = sorted(PCX_DIR.glob("*.bin"))
+
+    print(f"Found {len(files)} PCX files\n")
+
+    for f in files:
+        print(f.name)
 
 
 def info_pcx(name):
     filename = PCX_DIR / f"{name}.bin"
+
+    if not filename.exists():
+        print(f"File not found: {filename}")
+        return
 
     header = read_header(filename)
 
@@ -22,17 +37,19 @@ def info_pcx(name):
     print(f"Bytes/Line    : {header.bytes_per_line}")
 
 
-def list_pcx():
-    if not PCX_DIR.exists():
-        print(f"PCX folder not found: {PCX_DIR}")
+def export_pcx(name):
+    source = PCX_DIR / f"{name}.bin"
+
+    if not source.exists():
+        print(f"File not found: {source}")
         return
 
-    files = sorted(PCX_DIR.glob("*.bin"))
+    destination = OUTPUT_DIR / f"{name}.png"
 
-    print(f"Found {len(files)} PCX files\n")
+    export_png(source, destination)
 
-    for f in files:
-        print(f.name)
+    print("Export complete:")
+    print(destination)
 
 
 def main():
@@ -40,6 +57,7 @@ def main():
         print("Usage:")
         print("  python src\\maptool.py list-pcx")
         print("  python src\\maptool.py info-pcx <name>")
+        print("  python src\\maptool.py export-pcx <name>")
         return
 
     cmd = sys.argv[1].lower()
@@ -49,11 +67,17 @@ def main():
 
     elif cmd == "info-pcx":
         if len(sys.argv) != 3:
-            print("Usage:")
-            print("  python src\\maptool.py info-pcx TAA0_00P")
+            print("Usage: python src\\maptool.py info-pcx TAA0_00P")
             return
 
         info_pcx(sys.argv[2])
+
+    elif cmd == "export-pcx":
+        if len(sys.argv) != 3:
+            print("Usage: python src\\maptool.py export-pcx TAA0_00P")
+            return
+
+        export_pcx(sys.argv[2])
 
     else:
         print(f"Unknown command: {cmd}")
