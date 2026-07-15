@@ -111,10 +111,10 @@ def inspect_record(name, index):
 
     print(f"{name} - Record {index}")
     print("=" * 30)
-    print(f"Offset : 0x{record['offset']:08X}")
+    print(f"Offset : 0x{record.offset:08X}")
     print()
 
-    for i, value in enumerate(record["fields"]):
+    for i, value in enumerate(record.fields):
         print(f"{i:2}: {value:10} (0x{value:08X})")
 
 

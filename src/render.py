@@ -5,26 +5,23 @@ from map import MapFile
 
 
 def render_map(map_filename, pcx_filename, output_filename):
-    """
-    Temporary renderer.
+    from PIL import ImageDraw
 
-    Loads the MAP and PCX files and simply exports the PCX image.
-    This verifies that our rendering pipeline works before we begin
-    interpreting MAP records.
-    """
-
-    # Load map (currently unused except to verify it opens)
     m = MapFile(map_filename)
 
-    print(f"Loaded MAP: {m.record_count} records")
+    image = Image.open(pcx_filename).convert("RGB")
+    draw = ImageDraw.Draw(image)
 
-    # Load PCX
-    image = Image.open(pcx_filename)
+    print(f"Loaded {m.record_count} records")
 
-    # Ensure output folder exists
+    for record in m.records():
+
+        if record.signature != (2, 15, 5, 9):
+            continue
+
+        print(record.index, record.fields)
+
     output_filename.parent.mkdir(parents=True, exist_ok=True)
-
-    # Save a copy
     image.save(output_filename)
 
     print(f"Saved {output_filename}")
