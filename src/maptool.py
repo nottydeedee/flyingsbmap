@@ -1,60 +1,62 @@
-#!/usr/bin/env python3
-
+from pcx import read_header
 from pathlib import Path
 import sys
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-EXTRACTED_DIR = PROJECT_ROOT / "Extracted"
-OUTPUT_DIR = PROJECT_ROOT / "output"
+ROOT = Path(__file__).resolve().parent.parent
+PCX_DIR = ROOT / "Extracted" / "PCX"
 
 
-def check_folders():
-    required = [
-        EXTRACTED_DIR / "MAP",
-        EXTRACTED_DIR / "MAT",
-        EXTRACTED_DIR / "MFO",
-        EXTRACTED_DIR / "PCX",
-    ]
+def info_pcx(name):
+    filename = PCX_DIR / f"{name}.bin"
 
-    missing = [p for p in required if not p.exists()]
+    header = read_header(filename)
 
-    if missing:
-        print("Missing folders:")
-        for p in missing:
-            print(" -", p)
-        return False
+    print(name)
+    print("-" * len(name))
+    print(f"Size          : {header.width} x {header.height}")
+    print(f"Manufacturer  : {header.manufacturer}")
+    print(f"Version       : {header.version}")
+    print(f"Encoding      : {header.encoding}")
+    print(f"Bits/Pixel    : {header.bits_per_pixel}")
+    print(f"Planes        : {header.planes}")
+    print(f"Bytes/Line    : {header.bytes_per_line}")
 
-    OUTPUT_DIR.mkdir(exist_ok=True)
 
-    return True
+def list_pcx():
+    if not PCX_DIR.exists():
+        print(f"PCX folder not found: {PCX_DIR}")
+        return
+
+    files = sorted(PCX_DIR.glob("*.bin"))
+
+    print(f"Found {len(files)} PCX files\n")
+
+    for f in files:
+        print(f.name)
 
 
 def main():
+    if len(sys.argv) < 2:
+        print("Usage:")
+        print("  python src\\maptool.py list-pcx")
+        print("  python src\\maptool.py info-pcx <name>")
+        return
 
-    print("=" * 60)
-    print("FlyingSB Map Explorer")
-    print("=" * 60)
+    cmd = sys.argv[1].lower()
 
-    if not check_folders():
-        sys.exit(1)
+    if cmd == "list-pcx":
+        list_pcx()
 
-    print("Project folders verified.\n")
+    elif cmd == "info-pcx":
+        if len(sys.argv) != 3:
+            print("Usage:")
+            print("  python src\\maptool.py info-pcx TAA0_00P")
+            return
 
-    resource_types = {
-        "MAP": "*.bin",
-        "MAT": "*.bin",
-        "MFO": "*.txt",
-        "PCX": "*.bin",
-    }
+        info_pcx(sys.argv[2])
 
-    print("Resources")
-
-    for name, pattern in resource_types.items():
-        count = len(list((EXTRACTED_DIR / name).glob(pattern)))
-        print(f"  {name:4} : {count} files")
-
-    print("\nReady.")
+    else:
+        print(f"Unknown command: {cmd}")
 
 
 if __name__ == "__main__":

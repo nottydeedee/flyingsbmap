@@ -1,43 +1,48 @@
-"""
-PCX support for FlyingSB Map Explorer.
-
-(Currently only validates the PCX header.
-Decoding will be added next.)
-"""
-
+from dataclasses import dataclass
 from pathlib import Path
+import struct
 
 
-class PCXHeaderError(Exception):
-    """Raised when a PCX header is invalid."""
+@dataclass
+class PCXHeader:
+    manufacturer: int
+    version: int
+    encoding: int
+    bits_per_pixel: int
+    xmin: int
+    ymin: int
+    xmax: int
+    ymax: int
+    planes: int
+    bytes_per_line: int
+
+    @property
+    def width(self):
+        return self.xmax - self.xmin + 1
+
+    @property
+    def height(self):
+        return self.ymax - self.ymin + 1
 
 
 def read_header(filename):
-    """
-    Read and validate the 128-byte PCX header.
+    filename = Path(filename)
 
-    Returns a dictionary describing the image.
-    """
+    with filename.open("rb") as f:
+        data = f.read(128)
 
-    data = Path(filename).read_bytes()
+    if len(data) != 128:
+        raise ValueError("Invalid PCX header")
 
-    if len(data) < 128:
-        raise PCXHeaderError("File is smaller than a PCX header.")
-
-    h = data[:128]
-
-    if h[0] != 0x0A:
-        raise PCXHeaderError("Invalid PCX manufacturer byte.")
-
-    return {
-        "manufacturer": h[0],
-        "version": h[1],
-        "encoding": h[2],
-        "bits_per_pixel": h[3],
-        "xmin": int.from_bytes(h[4:6], "little"),
-        "ymin": int.from_bytes(h[6:8], "little"),
-        "xmax": int.from_bytes(h[8:10], "little"),
-        "ymax": int.from_bytes(h[10:12], "little"),
-        "planes": h[65],
-        "bytes_per_line": int.from_bytes(h[66:68], "little"),
-    }
+    return PCXHeader(
+        manufacturer=data[0],
+        version=data[1],
+        encoding=data[2],
+        bits_per_pixel=data[3],
+        xmin=struct.unpack_from("<H", data, 4)[0],
+        ymin=struct.unpack_from("<H", data, 6)[0],
+        xmax=struct.unpack_from("<H", data, 8)[0],
+        ymax=struct.unpack_from("<H", data, 10)[0],
+        planes=data[65],
+        bytes_per_line=struct.unpack_from("<H", data, 66)[0],
+    )
